@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ThenNow — swipe two images, files stay here</title>
+    <meta
+      name="description"
+      content="Drop a before image and an after image. Get a swipe comparison. Nothing is uploaded."
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #1c1917;
+        --muted: #57534e;
+        --line: #e7e5e4;
+        --bg: #fafaf9;
+        --card: #ffffff;
+        --accent: #0f766e;
+        --warn: #9a3412;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        line-height: 1.5;
+      }
+      main { max-width: 44rem; margin: 0 auto; padding: 4rem 1.5rem 5rem; }
+      h1 { font-size: 2rem; letter-spacing: -0.03em; margin: 0 0 0.75rem; }
+      h2 { font-size: 1.05rem; margin: 2rem 0 0.5rem; }
+      .kicker { color: var(--muted); font-size: 0.875rem; font-weight: 600; margin: 0 0 0.75rem; }
+      .lede { color: var(--muted); font-size: 1.125rem; max-width: 36rem; }
+      .drops { display: grid; gap: 0.75rem; grid-template-columns: 1fr; margin: 2rem 0 1rem; }
+      @media (min-width: 640px) { .drops { grid-template-columns: 1fr 1fr; } }
+      .drop {
+        border: 1px dashed #d6d3d1;
+        border-radius: 1rem;
+        background: var(--card);
+        padding: 1.5rem 1.1rem;
+        text-align: center;
+        min-height: 9rem;
+      }
+      .drop.over { border-color: var(--accent); background: #f0fdfa; }
+      .drop.filled { border-style: solid; }
+      .drop img {
+        display: block;
+        width: 100%;
+        height: 7rem;
+        object-fit: cover;
+        border-radius: 0.6rem;
+        margin: 0.6rem 0 0;
+      }
+      button {
+        appearance: none;
+        border: 0;
+        background: var(--ink);
+        color: white;
+        border-radius: 0.6rem;
+        padding: 0.6rem 1rem;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      button.secondary { background: white; color: var(--ink); border: 1px solid var(--line); }
+      button:disabled { opacity: 0.45; cursor: not-allowed; }
+      .meta { color: var(--muted); font-size: 0.875rem; }
+      .row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0; justify-content: center; }
+      .cards { display: grid; gap: 0.75rem; grid-template-columns: 1fr; }
+      @media (min-width: 640px) { .cards { grid-template-columns: 1fr 1fr 1fr; } }
+      .cards article {
+        border: 1px solid var(--line);
+        border-radius: 0.9rem;
+        padding: 1rem;
+        background: var(--card);
+      }
+      .cards h2 { font-size: 1rem; margin: 0 0 0.4rem; }
+      .cards p { margin: 0; color: var(--muted); font-size: 0.875rem; }
+      footer {
+        margin-top: 3rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 0.875rem;
+      }
+      a { color: inherit; }
+      .warn { color: var(--warn); font-size: 0.875rem; min-height: 1.3em; }
+      input[type="file"] { display: none; }
+      .stage-wrap { margin: 1.25rem 0; }
+      .stage {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        background: #e7e5e4;
+        border-radius: 1rem;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        user-select: none;
+        touch-action: none;
+      }
+      .stage.empty {
+        display: grid;
+        place-items: center;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+      .layer {
+        position: absolute;
+        inset: 0;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+      .layer.after { clip-path: inset(0 0 0 var(--cut, 50%)); }
+      .handle {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: var(--cut, 50%);
+        width: 2px;
+        margin-left: -1px;
+        background: white;
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.25);
+        pointer-events: none;
+      }
+      .handle::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 1.6rem;
+        height: 1.6rem;
+        border-radius: 999px;
+        background: white;
+        border: 2px solid var(--ink);
+        transform: translate(-50%, -50%);
+      }
+      .tag {
+        position: absolute;
+        top: 0.7rem;
+        padding: 0.15rem 0.5rem;
+        background: rgba(28, 25, 23, 0.72);
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border-radius: 0.4rem;
+      }
+      .tag.before { left: 0.7rem; }
+      .tag.after { right: 0.7rem; }
+      input[type="range"] { width: 100%; margin-top: 0.75rem; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="kicker">ThenNow</p>
+      <h1>You already said the problem out loud.</h1>
+      <p class="lede">
+        “Simple Before/After Tool?” Drop two frames of the same place. Swipe.
+        Download a PNG or a page you can send. Nothing is uploaded.
+      </p>
+
+      <div class="drops">
+        <div class="drop" id="dropBefore">
+          <p><strong>Before</strong></p>
+          <p class="meta">Old screenshot, archive, or export</p>
+          <div class="row">
+            <button type="button" id="pickBefore">Choose file</button>
+          </div>
+          <input id="fileBefore" type="file" accept="image/png,image/jpeg,image/webp,image/gif,.png,.jpg,.jpeg,.webp,.gif" />
+        </div>
+        <div class="drop" id="dropAfter">
+          <p><strong>After</strong></p>
+          <p class="meta">Current screenshot or export</p>
+          <div class="row">
+            <button type="button" id="pickAfter">Choose file</button>
+          </div>
+          <input id="fileAfter" type="file" accept="image/png,image/jpeg,image/webp,image/gif,.png,.jpg,.jpeg,.webp,.gif" />
+        </div>
+      </div>
+
+      <p class="meta">8 MB each. PNG, JPEG, WebP, or GIF. Files stay on this device.</p>
+      <p class="warn" id="warn"></p>
+
+      <div class="stage-wrap">
+        <div class="stage empty" id="stage">Drop both images to compare</div>
+        <input id="slider" type="range" min="0" max="100" value="50" disabled />
+      </div>
+
+      <div class="row">
+        <button type="button" id="swap" class="secondary" disabled>Swap</button>
+        <button type="button" id="png" disabled>Download PNG</button>
+        <button type="button" id="html" disabled>Download HTML</button>
+        <button type="button" id="clear" class="secondary">Clear</button>
+      </div>
+
+      <div class="cards">
+        <article>
+          <h2>No account</h2>
+          <p>Open the page. Drop two images. Leave.</p>
+        </article>
+        <article>
+          <h2>No upload</h2>
+          <p>The files never leave this tab.</p>
+        </article>
+        <article>
+          <h2>Not a map server</h2>
+          <p>It does not pull OSM history. You bring the two frames.</p>
+        </article>
+      </div>
+
+      <footer>
+        <p>
+          Reply to people who already mapped a place and still line up two
+          screenshots by hand. Suggested copy:
+        </p>
+        <p>
+          “If you already have (or can export) two frames of the same bbox,
+          ThenNow swipes them in the browser and never uploads the files:
+          open the HTML in this repo.”
+        </p>
+        <p>
+          Ask:
+          <a href="https://www.reddit.com/r/openstreetmap/comments/1vk5uid/simple_beforeafter_tool/"
+            >Simple Before/After Tool?</a>
+        </p>
+      </footer>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
