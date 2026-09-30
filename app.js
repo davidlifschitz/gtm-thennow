@@ -139,28 +139,36 @@ function pointerCut(e) {
   stage.style.setProperty("--cut", pct + "%");
 }
 
+function drawCover(ctx, img, w, h) {
+  const iw = img.naturalWidth;
+  const ih = img.naturalHeight;
+  const scale = Math.max(w / iw, h / ih);
+  const sw = w / scale;
+  const sh = h / scale;
+  ctx.drawImage(img, (iw - sw) / 2, (ih - sh) / 2, sw, sh, 0, 0, w, h);
+}
+
 function canvasPair() {
   const a = state.before.img;
   const b = state.after.img;
-  const w = Math.min(a.naturalWidth, b.naturalWidth, 2000);
-  const scaleA = w / a.naturalWidth;
-  const scaleB = w / b.naturalWidth;
-  const h = Math.min(
-    Math.round(a.naturalHeight * scaleA),
-    Math.round(b.naturalHeight * scaleB),
-    2000
-  );
+  // canvas takes the before image's shape; both images are cover-fit into it
+  let w = Math.min(a.naturalWidth, 2000);
+  let h = Math.round((a.naturalHeight * w) / a.naturalWidth);
+  if (h > 2000) {
+    w = Math.round((w * 2000) / h);
+    h = 2000;
+  }
   const canvas = document.createElement("canvas");
   canvas.width = w;
   canvas.height = h;
   const ctx = canvas.getContext("2d");
-  ctx.drawImage(a, 0, 0, w, h);
+  drawCover(ctx, a, w, h);
   const cutX = Math.round((state.cut / 100) * w);
   ctx.save();
   ctx.beginPath();
   ctx.rect(cutX, 0, w - cutX, h);
   ctx.clip();
-  ctx.drawImage(b, 0, 0, w, h);
+  drawCover(ctx, b, w, h);
   ctx.restore();
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(cutX - 1, 0, 2, h);
