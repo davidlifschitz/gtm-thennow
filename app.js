@@ -248,7 +248,7 @@ htmlBtn.addEventListener("click", async () => {
       "<!doctype html><meta charset='utf-8'><title>ThenNow</title>" +
       "<style>html,body{margin:0;height:100%;background:#111}#s{position:relative;height:100%;overflow:hidden}" +
       ".l{position:absolute;inset:0;background-size:contain;background-repeat:no-repeat;background-position:center}" +
-      "#n{position:absolute;inset:0;clip-path:inset(0 0 0 50%)}</style>" +
+      "#n{position:absolute;inset:0;clip-path:inset(0 0 0 " + Math.round(state.cut) + "%)}</style>" +
       "<div id=s><div class=l style='background-image:url(" +
       b64a +
       ")'></div><div class=l id=n style='background-image:url(" +
