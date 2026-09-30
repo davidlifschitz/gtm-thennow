@@ -167,7 +167,7 @@
           <div class="row">
             <button type="button" id="pickBefore">Choose file</button>
           </div>
-          <input id="fileBefore" type="file" accept="image/png,image/jpeg,image/webp,image/gif,.png,.jpg,.jpeg,.webp,.gif" />
+          <input id="fileBefore" type="file" aria-label="Before image" accept="image/png,image/jpeg,image/webp,image/gif,.png,.jpg,.jpeg,.webp,.gif" />
         </div>
         <div class="drop" id="dropAfter">
           <p><strong>After</strong></p>
@@ -175,16 +175,16 @@
           <div class="row">
             <button type="button" id="pickAfter">Choose file</button>
           </div>
-          <input id="fileAfter" type="file" accept="image/png,image/jpeg,image/webp,image/gif,.png,.jpg,.jpeg,.webp,.gif" />
+          <input id="fileAfter" type="file" aria-label="After image" accept="image/png,image/jpeg,image/webp,image/gif,.png,.jpg,.jpeg,.webp,.gif" />
         </div>
       </div>
 
       <p class="meta">8 MB each. PNG, JPEG, WebP, or GIF. Files stay on this device.</p>
-      <p class="warn" id="warn"></p>
+      <p class="warn" id="warn" role="status"></p>
 
       <div class="stage-wrap">
         <div class="stage empty" id="stage">Drop both images to compare</div>
-        <input id="slider" type="range" min="0" max="100" value="50" disabled />
+        <input id="slider" type="range" aria-label="Before/after split" min="0" max="100" value="50" disabled />
       </div>
 
       <div class="row">
