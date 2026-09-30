@@ -257,13 +257,18 @@ htmlBtn.addEventListener("click", async () => {
       "<style>html,body{margin:0;height:100%;background:#111}#s{position:relative;height:100%;overflow:hidden}" +
       ".l{position:absolute;inset:0;background-size:contain;background-repeat:no-repeat;background-position:center}" +
       "#n{position:absolute;inset:0;clip-path:inset(0 0 0 " + Math.round(state.cut) + "%)}</style>" +
-      "<div id=s><div class=l style='background-image:url(" +
+      "<div id=s tabindex=0 aria-label='Before/after comparison, use arrow keys' style='touch-action:none'><div class=l style='background-image:url(" +
       b64a +
       ")'></div><div class=l id=n style='background-image:url(" +
       b64b +
       ")'></div></div>" +
-      "<script>const n=document.getElementById('n');addEventListener('pointermove',e=>{" +
-      "n.style.clipPath='inset(0 0 0 '+(e.clientX/innerWidth*100)+'%)'});</script>";
+      "<script>const s=document.getElementById('s'),n=document.getElementById('n');let c=" + Math.round(state.cut) + ",d=false;" +
+      "const set=v=>{c=Math.min(100,Math.max(0,v));n.style.clipPath='inset(0 0 0 '+c+'%)'};" +
+      "const at=e=>set((e.clientX-s.getBoundingClientRect().left)/s.clientWidth*100);" +
+      "s.addEventListener('pointerdown',e=>{d=true;s.setPointerCapture&&s.setPointerCapture(e.pointerId);at(e)});" +
+      "s.addEventListener('pointermove',e=>{if(d||e.pointerType==='mouse')at(e)});" +
+      "s.addEventListener('pointerup',()=>{d=false});" +
+      "document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')set(c-5);if(e.key==='ArrowRight')set(c+5)});</script>";
     downloadBlob(new Blob([page], { type: "text/html" }), "thennow.html");
   } catch (err) {
     setWarn(err.message);
